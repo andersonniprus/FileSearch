@@ -130,7 +130,7 @@ void Searcher::process_buffer( const std::vector<uint8_t>& buffer, DWORD size )
 		if ( record->RecordLength == 0 )
 			break;
 
-		std::wstring filename(
+		std::wstring_view filename_view(
 			reinterpret_cast<const wchar_t*>( reinterpret_cast<const char*>( record ) + record->FileNameOffset ),
 			record->FileNameLength / sizeof( wchar_t )
 		);
@@ -140,7 +140,7 @@ void Searcher::process_buffer( const std::vector<uint8_t>& buffer, DWORD size )
 		m_db.insert(
 			record->FileReferenceNumber,
 			record->ParentFileReferenceNumber,
-			std::move( filename ),
+			filename_view,
 			is_directory
 		);
 

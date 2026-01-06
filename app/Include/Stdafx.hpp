@@ -21,6 +21,8 @@
 
 #include "Utility/Utility.hpp"
 
+#include "StringPool.h"
+
 #ifndef NDEBUG
 #define LOG( ... ) std::cout << std::format(__VA_ARGS__) << '\n'
 #else
