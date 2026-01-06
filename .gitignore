@@ -42,3 +42,4 @@
 
 # visual studio directory
 .vs
+/build/x64 - Debug
