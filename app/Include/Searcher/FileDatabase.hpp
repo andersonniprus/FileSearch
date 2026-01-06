@@ -10,7 +10,7 @@ struct FileNode
 class FileDatabase
 {
 public:
-	void insert( DWORD64 id, DWORD64 parent_id, std::wstring name, bool is_directory )
+	void insert( const DWORD64 id, const DWORD64 parent_id, std::wstring name, const bool is_directory )
 	{
 		std::lock_guard<std::mutex> lock( m_mutex );
 		m_files[ id ] = { parent_id, std::move( name ), is_directory };
@@ -20,7 +20,7 @@ public:
 	{
 		std::lock_guard<std::mutex> lock( m_mutex );
 
-		for ( const auto& [ id, node ] : m_files )
+		for ( const auto& id : m_files | std::views::keys )
 		{
 			std::wstring full_path = resolve_path_unlocked( id );
 			callback( full_path );
@@ -34,7 +34,7 @@ public:
 	}
 
 private:
-	std::wstring resolve_path_unlocked( DWORD64 id )
+	std::wstring resolve_path_unlocked( const DWORD64 id )
 	{
 		std::wstring full_path;
 		DWORD64 current_id = id;

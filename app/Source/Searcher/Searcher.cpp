@@ -54,7 +54,7 @@ bool Searcher::scan( char drive_letter )
 		enum_data.MinMajorVersion          = 2;
 		enum_data.MaxMajorVersion          = 2;
 
-		constexpr size_t buffer_size = 65536;
+		constexpr size_t buffer_size = 1024 * 1024 * 2; // 2MB
 		std::vector<uint8_t> buffer( buffer_size );
 		DWORD bytes_returned = 0;
 

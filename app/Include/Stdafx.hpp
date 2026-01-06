@@ -14,6 +14,7 @@
 #include <vector>
 #include <functional>
 #include <fstream>
+#include <ranges>
 
 #include <windows.h>
 #include <winioctl.h>
