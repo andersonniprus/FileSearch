@@ -43,3 +43,4 @@
 # visual studio directory
 .vs
 /build
+/vcpkg_installed
