@@ -1,6 +1,5 @@
 #pragma once
 
-
 struct HandleDeleter
 {
 	void operator()( HANDLE handle ) const

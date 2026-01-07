@@ -81,6 +81,12 @@
     <IntDir>$(SolutionDir)build\$(Platform) - $(Configuration)</IntDir>
     <IncludePath>$(SolutionDir)thirdparty\Include;$(ProjectDir)Include;$(IncludePath)</IncludePath>
   </PropertyGroup>
+  <PropertyGroup Label="Vcpkg">
+    <VcpkgEnableManifest>true</VcpkgEnableManifest>
+  </PropertyGroup>
+  <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <VcpkgUseStatic>true</VcpkgUseStatic>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -123,6 +129,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -141,6 +148,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -151,12 +159,18 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Source\UI\Renderer.cpp" />
+    <ClCompile Include="Source\UI\ResultsPage.cpp" />
+    <ClCompile Include="Source\UI\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\Application\Application.hpp" />
     <ClInclude Include="Include\Searcher\FileDatabase.hpp" />
     <ClInclude Include="Include\Searcher\Searcher.hpp" />
     <ClInclude Include="Include\Stdafx.hpp" />
+    <ClInclude Include="Include\UI\Renderer.hpp" />
+    <ClInclude Include="Include\UI\ResultsPage.hpp" />
+    <ClInclude Include="Include\UI\Window.hpp" />
     <ClInclude Include="Include\Utility\RAII.hpp" />
     <ClInclude Include="Include\Utility\Utility.hpp" />
   </ItemGroup>

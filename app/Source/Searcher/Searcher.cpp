@@ -10,6 +10,8 @@ bool Searcher::scan( char drive_letter )
 {
 	try
 	{
+		m_db.clear( );
+
 		drive_letter = static_cast<char>( std::toupper( drive_letter ) );
 		if ( drive_letter < 'A' || drive_letter > 'Z' )
 		{

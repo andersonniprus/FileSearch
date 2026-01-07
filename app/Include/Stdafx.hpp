@@ -1,5 +1,10 @@
 #pragma once
 
+#pragma comment(lib, "d3d11.lib")
+#pragma comment(lib, "d3dcompiler.lib")
+#pragma comment(lib, "dxgi.lib")
+#pragma comment(lib, "dwmapi.lib")
+
 #include <any>
 #include <memory>
 #include <typeindex>
@@ -7,6 +12,8 @@
 #include <stdexcept>
 #include <chrono>
 #include <mutex>
+#include <thread>
+#include <atomic>
 #include <iostream>
 #include <string>
 #include <format>
@@ -18,10 +25,16 @@
 
 #include <windows.h>
 #include <winioctl.h>
+#include <wrl/client.h>
+#include <d3d11.h>
 
 #include "Utility/Utility.hpp"
 
-#include "StringPool.h"
+#include "Common/StringPool.h"
+
+#include <imgui.h>
+#include <imgui_impl_dx11.h>
+#include <imgui_impl_win32.h>
 
 #ifndef NDEBUG
 #define LOG( ... ) std::cout << std::format(__VA_ARGS__) << '\n'

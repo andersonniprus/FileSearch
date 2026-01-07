@@ -1,7 +1,7 @@
 #include "Stdafx.hpp"
 #include "Application/Application.hpp"
 
-#ifdef NDEBUG
+#if defined(NDEBUG) && !defined(_CONSOLE)
 int __stdcall WinMain( HINSTANCE, HINSTANCE, LPSTR, int )
 #else
 int main( int, char*[ ] )
