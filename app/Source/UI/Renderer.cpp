@@ -36,12 +36,12 @@ namespace UI
 		swap_chain_->Present( 1, 0 );
 	}
 
-	ID3D11Device* Renderer::get_device( ) const
+	ID3D11Device* Renderer::get_device( ) const noexcept
 	{
 		return d3d_device_.Get( );
 	}
 
-	ID3D11DeviceContext* Renderer::get_device_context( ) const
+	ID3D11DeviceContext* Renderer::get_device_context( ) const noexcept
 	{
 		return d3d_device_context_.Get( );
 	}

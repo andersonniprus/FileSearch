@@ -2,18 +2,27 @@
 
 namespace UI
 {
+	/// @brief D3D11 Abstraction layer for rendering ImGui and clearing frames.
 	class Renderer
 	{
 	public:
 		Renderer( HWND hwnd );
 		~Renderer( );
 
+		/// @brief Recreates swapchain buffers on window resize.
 		void resize( int width, int height );
+
+		/// @brief Clears the render target view.
 		void clear( );
+
+		/// @brief Swaps the back buffer to the screen.
 		void present( ) const;
 
-		[[nodiscard]] ID3D11Device* get_device( ) const;
-		[[nodiscard]] ID3D11DeviceContext* get_device_context( ) const;
+		/// @brief Accesses the internal D3D11 device.
+		[[nodiscard]] ID3D11Device* get_device( ) const noexcept;
+
+		/// @brief Accesses the internal D3D11 context.
+		[[nodiscard]] ID3D11DeviceContext* get_device_context( ) const noexcept;
 
 	private:
 		void create_device_and_swapchain( HWND hwnd );

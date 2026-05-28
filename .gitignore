@@ -44,3 +44,5 @@
 .vs
 /build
 /vcpkg_installed
+/app/build
+out.xml

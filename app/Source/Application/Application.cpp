@@ -1,13 +1,12 @@
 #include "Stdafx.hpp"
 #include "Application/Application.hpp"
 #include "Searcher/Searcher.hpp"
-
 #include "UI/Window.hpp"
 #include "UI/ResultsPage.hpp"
 
 Application::Application( )
+	: searcher_( std::make_shared<Searcher>( ) )
 {
-	register_service( std::make_shared<Searcher>( ) );
 	LOG( "Application initialized" );
 }
 
@@ -15,12 +14,10 @@ int Application::run( ) const
 {
 	try
 	{
-		auto searcher = get_service<Searcher>( );
-
 		UI::Window window( L"File Searcher" );
 		UI::ResultsPage results_page;
 
-		results_page.set_searcher( searcher );
+		results_page.set_searcher( searcher_ );
 
 		window.run( [&results_page]
 		{

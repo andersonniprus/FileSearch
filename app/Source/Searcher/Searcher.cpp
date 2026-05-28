@@ -18,6 +18,8 @@ bool Searcher::scan( char drive_letter )
 			return false;
 		}
 
+		m_db.set_drive_letter( drive_letter );
+
 		std::wstring volume_path = L"\\\\.\\";
 		volume_path              += static_cast<wchar_t>( drive_letter );
 		volume_path              += L":";
@@ -30,7 +32,7 @@ bool Searcher::scan( char drive_letter )
 			FILE_SHARE_READ | FILE_SHARE_WRITE,
 			nullptr,
 			OPEN_EXISTING,
-			0,
+			FILE_FLAG_OVERLAPPED,
 			nullptr
 		) );
 
@@ -56,34 +58,62 @@ bool Searcher::scan( char drive_letter )
 		enum_data.MinMajorVersion          = 2;
 		enum_data.MaxMajorVersion          = 2;
 
-		constexpr size_t buffer_size = 1024 * 1024 * 2; // 2MB
-		std::vector<uint8_t> buffer( buffer_size );
+		constexpr size_t buffer_size = 1024 * 1024 * 8;
 		DWORD bytes_returned = 0;
 
-		LOG( "Starting USN enumeration..." );
+		LOG( "Starting USN enumeration (Async)..." );
 
-		while ( true )
+		m_db.reserve( 2000000 );
+
+		auto alloc_buffer = []( )
 		{
+			return static_cast<uint8_t*>( VirtualAlloc( nullptr, buffer_size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE ) );
+		};
+		auto free_buffer = []( uint8_t* p )
+		{
+			if ( p ) VirtualFree( p, 0, MEM_RELEASE );
+		};
+
+		uint8_t* buffers[ 2 ] = { alloc_buffer( ), alloc_buffer( ) };
+		if ( !buffers[ 0 ] || !buffers[ 1 ] )
+		{
+			free_buffer( buffers[ 0 ] );
+			free_buffer( buffers[ 1 ] );
+			return false;
+		}
+
+		OVERLAPPED ol[ 2 ] = {};
+		ol[ 0 ].hEvent     = CreateEventW( nullptr, TRUE, FALSE, nullptr );
+		ol[ 1 ].hEvent     = CreateEventW( nullptr, TRUE, FALSE, nullptr );
+
+		int current_idx = 0;
+
+		auto queue_read = [&]( int idx ) -> bool
+		{
+			ResetEvent( ol[ idx ].hEvent );
 			BOOL success = DeviceIoControl(
-				m_volume_handle.get( ),
-				FSCTL_ENUM_USN_DATA,
-				&enum_data,
-				sizeof( enum_data ),
-				buffer.data( ),
-				static_cast<DWORD>( buffer.size( ) ),
-				&bytes_returned,
-				nullptr
+				m_volume_handle.get( ), FSCTL_ENUM_USN_DATA,
+				&enum_data, sizeof( enum_data ),
+				buffers[ idx ], buffer_size,
+				nullptr, &ol[ idx ]
 			);
 
 			if ( !success )
 			{
-				DWORD error = GetLastError( );
-				if ( error == ERROR_HANDLE_EOF )
+				if ( GetLastError( ) != ERROR_IO_PENDING )
 				{
-					LOG( "Scan finished (EOF)." );
-					break;
+					return false;
 				}
-				LOG( "Enumeration stopped. Error: {}", error );
+			}
+			return true;
+		};
+
+		bool reading = queue_read( current_idx );
+
+		while ( reading )
+		{
+			if ( !GetOverlappedResult( m_volume_handle.get( ), &ol[ current_idx ], &bytes_returned, TRUE ) )
+			{
 				break;
 			}
 
@@ -92,11 +122,22 @@ bool Searcher::scan( char drive_letter )
 				break;
 			}
 
-			process_buffer( buffer, bytes_returned );
+			enum_data.StartFileReferenceNumber = *reinterpret_cast<DWORD64*>( buffers[ current_idx ] );
 
-			enum_data.StartFileReferenceNumber = *reinterpret_cast<DWORD64*>( buffer.data( ) );
+			int next_idx = 1 - current_idx;
+			reading      = queue_read( next_idx );
+
+			process_buffer( buffers[ current_idx ], bytes_returned );
+
+			current_idx = next_idx;
 		}
 
+		CloseHandle( ol[ 0 ].hEvent );
+		CloseHandle( ol[ 1 ].hEvent );
+		free_buffer( buffers[ 0 ] );
+		free_buffer( buffers[ 1 ] );
+
+		m_db.finalize( );
 		return true;
 	}
 	catch ( const std::exception& e )
@@ -121,13 +162,13 @@ bool Searcher::query_journal_info( HANDLE volume, USN_JOURNAL_DATA_V0& out_data 
 	);
 }
 
-void Searcher::process_buffer( const std::vector<uint8_t>& buffer, DWORD size )
+void Searcher::process_buffer( const uint8_t* buffer, DWORD size )
 {
 	DWORD offset = sizeof( USN );
 
 	while ( offset < size )
 	{
-		auto* record = reinterpret_cast<const USN_RECORD_V2*>( buffer.data( ) + offset );
+		auto* record = reinterpret_cast<const USN_RECORD_V2*>( buffer + offset );
 
 		if ( record->RecordLength == 0 )
 			break;

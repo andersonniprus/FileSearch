@@ -47,50 +47,6 @@ namespace UI
 		UnregisterClassW( wc_.lpszClassName, wc_.hInstance );
 	}
 
-	void Window::run( const std::function<void( )>& on_render )
-	{
-		MSG msg;
-		while ( running_ )
-		{
-			if ( PeekMessage( &msg, nullptr, 0U, 0U, PM_REMOVE ) )
-			{
-				TranslateMessage( &msg );
-				DispatchMessage( &msg );
-				if ( msg.message == WM_QUIT ) running_ = false;
-				continue;
-			}
-
-			ImGui_ImplDX11_NewFrame( );
-			ImGui_ImplWin32_NewFrame( );
-			ImGui::NewFrame( );
-
-			RECT client_rect;
-			GetClientRect( hwnd_, &client_rect );
-			const float window_width  = static_cast<float>( client_rect.right - client_rect.left );
-			const float window_height = static_cast<float>( client_rect.bottom - client_rect.top );
-
-			ImGui::SetNextWindowPos( { 0, 0 } );
-			ImGui::SetNextWindowSize( { window_width, window_height } );
-
-			constexpr auto flags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoBringToFrontOnFocus |
-			                       ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-
-			if ( ImGui::Begin( "Main", nullptr, flags ) )
-			{
-				if ( on_render ) on_render( );
-			}
-			ImGui::End( );
-
-			ImGui::Render( );
-
-			renderer_->clear( );
-
-			ImGui_ImplDX11_RenderDrawData( ImGui::GetDrawData( ) );
-
-			renderer_->present( );
-		}
-	}
-
 	void Window::close( )
 	{
 		running_ = false;
