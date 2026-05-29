@@ -1,5 +1,7 @@
 #pragma once
 
+/// @brief Precompiled header containing all common standard and project dependencies.
+
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "d3dcompiler.lib")
 #pragma comment(lib, "dxgi.lib")
@@ -38,10 +40,17 @@
 #include <imgui_impl_dx11.h>
 #include <imgui_impl_win32.h>
 
+#include <string_view>
+#include <cassert>
+#include <cstddef>
+#include <iterator>
+#include <limits>
+#include <type_traits>
+
 #include "Common/StringPool.h"
 #include "Utility/RAII.hpp"
-#include "Utility/Utility.hpp"
 #include "Searcher/FileDatabase.hpp"
+#include "Searcher/NtfsStructures.hpp"
 #include "Searcher/Searcher.hpp"
 #include "UI/Renderer.hpp"
 #include "UI/ResultsPage.hpp"

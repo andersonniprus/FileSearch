@@ -1,5 +1,4 @@
 #include "Stdafx.hpp"
-#include "UI/Renderer.hpp"
 
 namespace UI
 {

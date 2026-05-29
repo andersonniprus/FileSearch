@@ -1,6 +1,6 @@
 #pragma once
 
-/// @brief Orchestrates NTFS USN Journal scanning and database population.
+/// @brief Orchestrates raw disk I/O to parse the NTFS Master File Table (MFT).
 class Searcher
 {
 public:
@@ -10,17 +10,10 @@ public:
 	Searcher( );
 	~Searcher( ) = default;
 
-	/// @brief Performs a full scan of the specified volume.
+	/// @brief Performs a full raw MFT scan of the specified volume.
 	/// @param drive_letter The drive letter (e.g., 'C').
-	/// @return True if scan completed successfully.
+	/// @return True if scan completed successfully, false if access denied or failed.
 	bool scan( char drive_letter );
-
-	/// @brief High-level iteration over all files in the database.
-	template<std::invocable<const std::wstring&> F>
-	void for_each_file( F&& callback )
-	{
-		m_db.visit_all_paths( std::forward<F>( callback ) );
-	}
 
 	/// @brief Applies a text filter and sort to the database results.
 	void apply_filter_and_sort( const std::wstring_view query, SortColumn col, SortDirection dir )
@@ -47,7 +40,7 @@ public:
 	}
 
 	/// @brief Resolves name for UI virtualization without computing full path.
-	[[nodiscard]] std::wstring_view get_name_by_index( size_t index ) const
+	[[nodiscard]] std::wstring_view get_name_by_index( size_t index ) const noexcept
 	{
 		return m_db.get_name_by_index( index );
 	}
@@ -59,18 +52,54 @@ public:
 	}
 
 	/// @brief Checks directory status for UI virtualization.
-	[[nodiscard]] bool is_directory_by_index( size_t index ) const
+	[[nodiscard]] bool is_directory_by_index( size_t index ) const noexcept
 	{
 		return m_db.is_directory_by_index( index );
 	}
 
-private:
-	/// @brief Queries metadata about the USN Journal.
-	static bool query_journal_info( HANDLE volume, USN_JOURNAL_DATA_V0& out_data );
+	/// @brief Gets file size for UI virtualization.
+	[[nodiscard]] uint64_t get_size_by_index( size_t index ) const noexcept
+	{
+		return m_db.get_size_by_index( index );
+	}
 
-	/// @brief Parses a raw USN data buffer and inserts records into the database.
-	void process_buffer( const uint8_t* buffer, DWORD size );
+	/// @brief Gets timestamp for UI virtualization.
+	[[nodiscard]] uint64_t get_timestamp_by_index( size_t index ) const noexcept
+	{
+		return m_db.get_timestamp_by_index( index );
+	}
+
+	/// @brief Gets estimated memory usage of the underlying database.
+	[[nodiscard]] size_t get_memory_usage( ) const noexcept
+	{
+		return m_db.get_memory_usage( );
+	}
+
+private:
+	struct DataRun
+	{
+		uint64_t logical_cluster;
+		uint64_t cluster_count;
+	};
+
+	/// @brief Parses the VBR to initialize NTFS geometry.
+	[[nodiscard]] bool parse_boot_sector( HANDLE volume );
+
+	/// @brief Reads the $MFT record and decodes its data runs.
+	[[nodiscard]] bool extract_mft_runs( HANDLE volume );
+
+	/// @brief Decodes a variable-length integer from a runlist.
+	[[nodiscard]] static int64_t decode_run_offset( const uint8_t* runlist, uint8_t offset_size ) noexcept;
+	[[nodiscard]] static uint64_t decode_run_length( const uint8_t* runlist, uint8_t length_size ) noexcept;
+
+	/// @brief Parses a raw memory buffer containing multiple MFT records.
+	void process_mft_buffer( const uint8_t* buffer, size_t size );
 
 	UniqueHandle m_volume_handle;
 	FileDatabase m_db;
-};
+
+	uint32_t m_bytes_per_cluster = 0;
+	uint32_t m_bytes_per_record  = 0;
+	uint64_t m_mft_start_cluster = 0;
+	std::vector<DataRun> m_mft_runs;
+	};

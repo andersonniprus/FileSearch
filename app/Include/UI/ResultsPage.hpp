@@ -2,15 +2,6 @@
 
 namespace UI
 {
-	/// @brief Container for entry data displayed in the UI table.
-	struct DisplayEntry
-	{
-		std::wstring name;
-		std::wstring path;
-		std::wstring size_str;
-		bool is_directory;
-	};
-
 	/// @brief The main UI view for triggering scans and displaying results.
 	class ResultsPage
 	{
@@ -40,7 +31,6 @@ namespace UI
 		size_t total_entries_ = 0;
 
 		std::atomic<bool> scan_in_progress_ = false;
-		std::atomic<bool> scan_complete_    = false;
 		std::jthread scan_thread_;
 		std::chrono::steady_clock::time_point scan_start_time_;
 		std::chrono::milliseconds scan_duration_ { 0 };
@@ -48,7 +38,7 @@ namespace UI
 		std::vector<std::string> available_drives_;
 		int selected_drive_idx_ = 0;
 		char search_query_[ 256 ] = "";
-		Searcher::SortColumn current_sort_col_ = Searcher::SortColumn::Name;
-		Searcher::SortDirection current_sort_dir_ = Searcher::SortDirection::Ascending;
+		Searcher::SortColumn current_sort_col_ = Searcher::SortColumn::Date;
+		Searcher::SortDirection current_sort_dir_ = Searcher::SortDirection::Descending;
 	};
 }

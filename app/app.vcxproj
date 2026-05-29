@@ -167,13 +167,13 @@
   <ItemGroup>
     <ClInclude Include="Include\Application\Application.hpp" />
     <ClInclude Include="Include\Searcher\FileDatabase.hpp" />
+    <ClInclude Include="Include\Searcher\NtfsStructures.hpp" />
     <ClInclude Include="Include\Searcher\Searcher.hpp" />
     <ClInclude Include="Include\Stdafx.hpp" />
     <ClInclude Include="Include\UI\Renderer.hpp" />
     <ClInclude Include="Include\UI\ResultsPage.hpp" />
     <ClInclude Include="Include\UI\Window.hpp" />
     <ClInclude Include="Include\Utility\RAII.hpp" />
-    <ClInclude Include="Include\Utility\Utility.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

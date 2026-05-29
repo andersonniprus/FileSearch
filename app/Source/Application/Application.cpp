@@ -1,8 +1,4 @@
 #include "Stdafx.hpp"
-#include "Application/Application.hpp"
-#include "Searcher/Searcher.hpp"
-#include "UI/Window.hpp"
-#include "UI/ResultsPage.hpp"
 
 Application::Application( )
 	: searcher_( std::make_shared<Searcher>( ) )
